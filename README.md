@@ -1,5 +1,9 @@
 # AxisTables
 
+[![Build Status](https://travis-ci.com/Tokazama/AxisTables.jl.svg?branch=master)](https://travis-ci.com/Tokazama/AxisTables.jl)
+[![stable-docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://Tokazama.github.io/AxisTables.jl/stable)
+[![dev-docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://Tokazama.github.io/AxisTables.jl/dev)
+
 ## Construction
 
 ### Key Word Construction
