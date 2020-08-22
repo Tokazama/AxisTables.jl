@@ -5,7 +5,7 @@
 ### Key Word Construction
 
 ```julia
-julia> using AxisIndices
+julia> using AxisTables
 
 julia> t = Table(A = 1:4, B = ["M", "F", "F", "M"])
 Table
