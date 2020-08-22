@@ -1,0 +1,5 @@
+# AxisTables
+
+```@autodocs
+Modules = [AxisTables]
+```
