@@ -1,10 +1,28 @@
 # AxisTables
 
+![Lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 [![Build Status](https://travis-ci.com/Tokazama/AxisTables.jl.svg?branch=master)](https://travis-ci.com/Tokazama/AxisTables.jl)
 [![stable-docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://Tokazama.github.io/AxisTables.jl/stable)
 [![dev-docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://Tokazama.github.io/AxisTables.jl/dev)
 
 ## Construction
+
+### Matrix to Table
+
+```julia
+julia> using AxisTables
+
+julia> t = Table(ones(2,2), col_keys=[:A, :B])
+Table
+┌─────┬─────┐
+│   A │   B │
+├─────┼─────┤
+│ 1.0 │ 1.0 │
+│ 1.0 │ 1.0 │
+└─────┴─────┘
+
+
+```
 
 ### Key Word Construction
 

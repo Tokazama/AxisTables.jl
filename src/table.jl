@@ -1,5 +1,15 @@
 
-function check_rows_length(x::AbstractVector{<:AbstractVector}, raxis::AbstractAxis)
+function check_rows_length(x::AbstractMatrix, raxis)
+    length(raxis) == size(x, 1) || error("All columns must have the same number of rows.")
+    return nothing
+end
+
+function check_cols_length(x::AbstractMatrix, caxis)
+    length(caxis) == size(x, 2) || error("Column axis must have the same length as the number of columns.")
+    return nothing
+end
+
+function check_rows_length(x::AbstractVector{<:AbstractVector}, raxis)
     nr = length(raxis)
     for x_i in x
         length(x_i) == nr || error("All columns must have the same number of rows.")
@@ -7,7 +17,7 @@ function check_rows_length(x::AbstractVector{<:AbstractVector}, raxis::AbstractA
     return nothing
 end
 
-function check_cols_length(x::AbstractVector{<:AbstractVector}, caxis::AbstractAxis)
+function check_cols_length(x::AbstractVector{<:AbstractVector}, caxis)
     length(caxis) == length(x) || error("Column axis must have the same length as the number of columns.")
     return nothing
 end
@@ -26,31 +36,53 @@ function _create_col_axis(x::AbstractVector{<:AbstractVector}, caxis::AbstractAx
     return caxis
 end
 
+function _create_col_axis(x::AbstractMatrix, caxis::AbstractVector{Symbol})
+    return to_axis(caxis, indices(x, 2))
+end
+
 function _create_col_axis(x::AbstractVector{<:AbstractVector}, caxis::AbstractVector{Symbol})
-    return _create_col_axis(x, to_axis(caxis, indices(x, 1)))
+    return to_axis(caxis, indices(x, 1))
 end
 
 function _create_col_axis(x::AbstractVector{<:AbstractVector}, ::Type{T}) where {T}
     return StructAxis{T}(indices(x, 1))
 end
 
+_create_col_axis(x::AbstractMatrix, ::Nothing) = _create_col_axis(x, col_axis(x))
 function _create_col_axis(x::AbstractVector{<:AbstractVector}, ::Nothing)
-    return _create_col_axis(x, row_keys(x))
+    return _create_col_axis(x, row_axis(x))
 end
 
+function _create_col_axis(x::AbstractMatrix, caxis::AbstractVector{<:Integer})
+    return to_axis([Symbol(:x, col_i) for col_i in caxis], indices(x, 1))
+end
 function _create_col_axis(x::AbstractVector{<:AbstractVector}, caxis::AbstractVector{<:Integer})
     return to_axis([Symbol(:x, col_i) for col_i in caxis], indices(x, 1))
 end
 
-# TODO
+_create_row_axis(x::AbstractMatrix, ::Nothing) = to_axis(axes(x, 1))
 function _create_row_axis(x::AbstractVector{<:AbstractVector}, ::Nothing)
-    return _create_row_axis(x, to_axis(axes(first(x), 1)))
+    return to_axis(axes(first(x), 1))
+end
+
+function _create_row_axis(x::AbstractMatrix, raxis::AbstractVector)
+    check_rows_length(x, raxis)
+    return to_axis(raxis, axes(x, 1))
+end
+function _create_row_axis(x::AbstractVector{<:AbstractVector},  raxis::AbstractVector)
+    check_rows_length(x, raxis)
+    return to_axis(raxis, axes(first(x), 1))
 end
 
 function _create_row_axis(x::AbstractVector{<:AbstractVector}, raxis::AbstractAxis)
     check_rows_length(x, raxis)
     return raxis
 end
+function _create_row_axis(x::AbstractMatrix, raxis::AbstractAxis)
+    check_rows_length(x, raxis)
+    return raxis
+end
+
 
 """
     Table
@@ -72,29 +104,25 @@ struct Table{P<:AbstractVector{<:AbstractVector},RA,CA} <: AbstractTable{P,RA,CA
         return Table{typeof(x),typeof(raxis),typeof(caxis)}(x, raxis, caxis)
     end
 
-    function Table(x::AbstractMatrix, raxis::AbstractAxis, caxis::AbstractAxis)
-        if size(x, 1) != length(raxis)
-            error("Got size(data, 1) = $(size(x, 1)) and length(row_axis) = $(length(raxis))")
-        end
-        if size(x, 2) != length(caxis)
-            error("Got size(data, 2) = $(size(x, 2)) and length(col_axis) = $(length(caxis))")
-        end
+    function Table(x::AbstractMatrix{T}; row_keys=nothing, col_keys=nothing) where {T}
+        caxis = _create_col_axis(x, col_keys)
+        raxis = _create_row_axis(x, row_keys)
         data = Vector{Vector{T}}(undef, size(x, 2))
         @inbounds for i in axes(x, 2)
             data[i] = x[:,i]
         end
-        Table{Vector{AbstractVector},typeof(raxis),typeof(caxis)}(data, raxis, caxis)
+        return Table{typeof(data),typeof(raxis),typeof(caxis)}(data, raxis, caxis)
     end
 
-    function Table(x::AbstractVector{<:AbstractVector}; row_axis=nothing, col_axis=nothing)
-        caxis = _create_col_axis(x, col_axis)
-        raxis = _create_row_axis(x, row_axis)
+    function Table(x::AbstractVector{<:AbstractVector}; row_keys=nothing, col_keys=nothing)
+        caxis = _create_col_axis(x, col_keys)
+        raxis = _create_row_axis(x, row_keys)
         return Table{typeof(x),typeof(raxis),typeof(caxis)}(x, raxis, caxis)
     end
 
-    function Table(x::AxisVector{<:Any,<:AbstractVector{<:AbstractVector}}; row_axis=nothing, col_axis=nothing)
-        caxis = _create_col_axis(x, col_axis)
-        raxis = _create_row_axis(x, row_axis)
+    function Table(x::AxisVector{<:Any,<:AbstractVector{<:AbstractVector}}; row_keys=nothing, col_keys=nothing)
+        caxis = _create_col_axis(x, col_keys)
+        raxis = _create_row_axis(x, row_keys)
         return Table{parent_type(x),typeof(raxis),typeof(caxis)}(parent(x), raxis, caxis)
     end
 

@@ -32,7 +32,7 @@ import AxisIndices: col_axis, row_axis, row_type, col_type
     @test @inferred(col_axis(r)) isa Axis
 
     @testset "StructAxis Columns" begin
-        x = Table([[1,2],[3,4]]; col_axis=NamedTuple{(:a, :b),Tuple{Int,Int}})
+        x = Table([[1,2],[3,4]]; col_keys=NamedTuple{(:a, :b),Tuple{Int,Int}})
         @test @inferred(Tables.schema(x)) isa Tables.Schema{(:a,:b),Tuple{Int,Int}}
         @test @inferred(propertynames(x)) == [:a, :b]
 
