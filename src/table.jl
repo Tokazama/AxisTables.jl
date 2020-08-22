@@ -36,6 +36,11 @@ function _create_col_axis(x::AbstractVector{<:AbstractVector}, caxis::AbstractAx
     return caxis
 end
 
+function _create_col_axis(x::AbstractMatrix, caxis::AbstractAxis)
+    check_cols_length(x, caxis)
+    return caxis
+end
+
 function _create_col_axis(x::AbstractMatrix, caxis::AbstractVector{Symbol})
     return to_axis(caxis, indices(x, 2))
 end

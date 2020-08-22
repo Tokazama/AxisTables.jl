@@ -5,7 +5,7 @@ using Documenter
 using TableTraits
 using TableTraitsUtils
 using AxisTables
-import AxisIndices: StructAxis, SimpleAxis, Axis
+import AxisIndices: StructAxis, SimpleAxis, Axis, AxisArray
 import AxisIndices: col_axis, row_axis, row_type, col_type
 
 @testset "Tables" begin
@@ -43,6 +43,14 @@ import AxisIndices: col_axis, row_axis, row_type, col_type
         @test @inferred(col_axis(x)) isa StructAxis
 
     end
+end
+
+
+@testset "Table(::AbstractMatrix)" begin
+    @test keys(axes(Table(ones(2,2), col_keys=[:a, :b]), 2)) == [:a, :b]
+    @test keys(axes(Table(ones(2,2)), 2)) == [:x1, :x2]
+    @test keys(axes(Table(ones(2,2), row_keys=[:a, :b]), 1)) == [:a, :b]
+    @test keys.(axes(Table(AxisArray(ones(2,2), [:a, :b], [:a, :b])))) == ([:a, :b], [:a, :b])
 end
 
 
